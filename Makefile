@@ -1,5 +1,5 @@
 NAME_CLIENT =		client
-SRCS_CLIENT =		./client.c
+SRCS_CLIENT =		./client.c ./client_utils.c
 
 NAME_SERVER =		server
 SRCS_SERVER =		./server.c

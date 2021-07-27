@@ -1,8 +1,6 @@
 #include "minitalk.h"
 
-#include <stdio.h>
-
-void				*ft_memset(void *s, int c, size_t n)
+void	*ft_memset(void *s, int c, size_t n)
 {
 	unsigned char	k;
 	size_t			i;
@@ -41,11 +39,13 @@ void	ft_putnbr_fd(int n, int fd)
 	ft_putchar_fd(n % 10 + '0', fd);
 }
 
-void hdl(int sig, struct __siginfo *info, void *oldact)
+void	hdl(int sig, struct __siginfo *info, void *oldact)
 {
-	int counter;
-	char outchar;
+	static int	counter;
+	static char	outchar;
+	void		*norm_param;
 
+	norm_param = oldact;
 	if (sig == SIGUSR1)
 	{
 		outchar += 1 << counter;
@@ -53,23 +53,20 @@ void hdl(int sig, struct __siginfo *info, void *oldact)
 	counter++;
 	if (counter == 8)
 	{
-		write(1, &outchar, 1);
+		if (outchar == '\0')
+			write (1, "\n", 1);
+		else
+			write(1, &outchar, 1);
 		counter = 0;
 		outchar = 0;
 	}
 	kill(info->si_pid, SIGUSR1);
 }
 
-int main()
+int	main(void)
 {
-	int pid;
-	int i;
-	char outchar;
-
-	struct sigaction act;
-	sigset_t   set; 
-
-	outchar = 0;
+	int					pid;
+	struct sigaction	act;
 
 	pid = getpid();
 	if (pid <= 0)
@@ -78,12 +75,14 @@ int main()
 		exit(EXIT_FAILURE);
 	}
 	else
+	{
 		write(1, "PID = ", 6);
 		ft_putnbr_fd(pid, 1);
 		write(1, "\n", 1);
+	}
 	ft_memset(&act, 0, sizeof(act));
-	act.sa_sigaction = hdl;
 	act.sa_flags = SA_SIGINFO;
+	act.sa_sigaction = hdl;
 	sigaction(SIGUSR1, &act, 0);
 	sigaction(SIGUSR2, &act, 0);
 	while (1)
