@@ -1,5 +1,7 @@
 #include "minitalk.h"
 
+#include <stdio.h>
+
 static int	check_argv(char *str)
 {
 	int	i;
@@ -20,24 +22,79 @@ static int	check_argv(char *str)
 
 int	send_signal(char c, int pid)
 {
-	int	i;
+	// char *buf;
+	// int signum;
+	// int	i;
+	// int j;
+
+	// i = 7;
+	// j = 0;
+	// buf = (char *)malloc(sizeof(char) * 8);
+	// if (!buf)
+	// {
+	// 	write(2, "error: malloc!\n", 15);
+	// 	return (0);
+	// }
+	// while(i >= 0 && j < 8)
+	// {
+		
+	// 	buf[i] = c & (1 << j);
+	// 	if (buf[i] != 0)
+	// 		buf[i] /= buf[i];
+	// 	i--;
+	// 	j++;
+	// }
+	
+
+	// j = 0;
+	// while (j < 8)
+	// {
+	// 	// printf("%d: %d\n", j, buf[j]);
+	// 	if (buf[j] == '0')
+	// 		signum = SIGUSR1;
+	// 	else if (buf[j] == '1')
+	// 		signum = SIGUSR2;
+	// 	if (kill(pid, signum) == -1)
+	// 		return (0);
+	// 	j++;
+	// 	usleep(500);
+	// }
+
+	// free(buf);
+
+	// i = pid;
+
+
+	int i;
+	int flag;
 
 	i = 0;
-	while (i < 8)
+	flag = 0;
+
+	while (i < 8 && !flag)
 	{
 		if (c & (1 << i))
 		{
 			if (kill(pid, SIGUSR1) == -1)
+			{
+				flag = 1;
 				return (0);
+			}
 		}
 		else
 		{
 			if (kill(pid, SIGUSR2) == -1)
+			{
+				flag = 1;
 				return (0);
+			}
 		}
 		i++;
-		usleep(3000);
+		usleep(500);
+		// pause();
 	}
+	if (i != 8)
+		printf("can't send msg\n");
 	return (1);
 }
 

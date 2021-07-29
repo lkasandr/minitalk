@@ -1,5 +1,7 @@
 #include "minitalk.h"
 
+#include <stdio.h>
+
 void	*ft_memset(void *s, int c, size_t n)
 {
 	unsigned char	k;
@@ -39,17 +41,20 @@ void	ft_putnbr_fd(int n, int fd)
 	ft_putchar_fd(n % 10 + '0', fd);
 }
 
-void	hdl(int sig, struct __siginfo *info, void *oldact)
+void	hdl(int sig, siginfo_t *info, void *oldact)
 {
 	static int	counter;
 	static char	outchar;
 	void		*norm_param;
+	static int	norm_pid;
 
+	if (info->si_pid != 0)
+		norm_pid = info->si_pid;
+	if (info->si_pid == 0)
+		info->si_pid = norm_pid;
 	norm_param = oldact;
 	if (sig == SIGUSR1)
-	{
 		outchar += 1 << counter;
-	}
 	counter++;
 	if (counter == 8)
 	{
@@ -68,6 +73,8 @@ int	main(void)
 	int					pid;
 	struct sigaction	act;
 
+	sigset_t   set; 
+
 	pid = getpid();
 	if (pid <= 0)
 	{
@@ -83,6 +90,12 @@ int	main(void)
 	ft_memset(&act, 0, sizeof(act));
 	act.sa_flags = SA_SIGINFO;
 	act.sa_sigaction = hdl;
+	
+	sigemptyset(&set);                                                             
+	sigaddset(&set, SIGUSR1); 
+	sigaddset(&set, SIGUSR2);
+	act.sa_mask = set;
+
 	sigaction(SIGUSR1, &act, 0);
 	sigaction(SIGUSR2, &act, 0);
 	while (1)
