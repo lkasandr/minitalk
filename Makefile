@@ -1,30 +1,37 @@
-NAME =		philo
-SRCS =		./init.c \
-			./mutex.c \
-			./philo.c \
-			./utils.c \
+NAME_CLIENT =		client
+SRCS_CLIENT =		./client.c ./client_utils.c
 
-HEADER =	./philo.h	
-OBJS =		$(SRCS:.c=.o)
+NAME_SERVER =		server
+SRCS_SERVER =		./server.c
+
+HEADER =	./minitalk.h
+
+OBJS_CLIENT =		$(SRCS_CLIENT:c=o)
+OBJS_SERVER =		$(SRCS_SERVER:c=o)
 
 %.o:		%.c $(HEADER)
-			${CC}   -c $< -o ${<:.c=.o}
+			${CC} $(CFLAGS) -c $< -o ${<:.c=.o}
 
 CC =		gcc
-CFLAGS =	-Wall -Wextra -Werror -pthread
+CFLAGS =	-Wall -Wextra -Werror
 OPTFLAGS =  -O2
 RM =		rm -f
 
-all :		${NAME}
+all :		${NAME_CLIENT} ${NAME_SERVER}
 
-$(NAME) :	$(OBJS) 
-			$(CC) $(CFLAGS) $(OPTFLAGS) -o ${NAME} $(OBJS) -I$(HEADER)
+$(NAME_CLIENT) :	$(OBJS_CLIENT) 
+			$(CC) $(CFLAGS) $(OPTFLAGS) -o ${NAME_CLIENT} $(OBJS_CLIENT) -I$(HEADER)
+
+$(NAME_SERVER) :	$(OBJS_SERVER) 
+			$(CC) $(CFLAGS) $(OPTFLAGS) -o ${NAME_SERVER} $(OBJS_SERVER) -I$(HEADER)
 
 clean :		
-			$(RM) $(OBJS)
+			$(RM) $(OBJS_CLIENT)
+			$(RM) $(OBJS_SERVER)
 
 fclean 	:	clean
-			$(RM) ${NAME}
+			$(RM) ${NAME_CLIENT}
+			$(RM) ${NAME_SERVER}
 
 re :		fclean all
 

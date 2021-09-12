@@ -1,100 +1,106 @@
-#include <signal.h>
-#include <unistd.h>
+#include "minitalk.h"
 
-void	ft_putstr_fd(char *s, int fd)
+#include <stdio.h>
+
+static int	check_argv(char *str)
 {
-	if (s)
+	int	i;
+
+	i = 0;
+	while (str[i])
 	{
-		while (*s)
+		if (ft_isdigit(str[i]))
+			i++;
+		else
 		{
-			write(fd, s, 1);
-			s++;
+			write(2, "Wrong PID-number!\n", 18);
+			exit(EXIT_FAILURE);
 		}
 	}
+	return (1);
 }
 
-int	ft_isdigit(int c)
+int	send_signal(char c, int pid)
 {
-	return (c >= '0' && c <= '9');
-}
-
-int					ft_atoi(const char *str)
-{
-	size_t			i;
-	int				j;
-	long int		f;
+	int i;
+	int flag;
 
 	i = 0;
-	j = 1;
-	f = 0;
-	while (str[i] && (str[i] == '\t' || str[i] == '\n' || str[i] == '\v' ||
-			str[i] == '\f' || str[i] == '\r' || str[i] == ' '))
-		i++;
-	if (str[i] && (str[i] == '-' || str[i] == '+'))
-	{
-		if (str[i] == '-')
-			j = -1 * j;
-		i++;
-	}
-	while (str[i] && ft_isdigit(str[i]))
-	{
-		if ((f > 2147483647 && j == 1) || (f > 2147483648 && j == -1))
-			return (j == 1 ? -1 : 0);
-		f = f * 10 + (str[i] - '0');
-		i++;
-	}
-	return (j * f);
-}
+	flag = 0;
 
-void process_signal(int signal)
-{
-	(void)signal;
-}
-
-static	int	send_msg(int pid, char c)
-{
-	int		i;
-	int		check_connect;
-
-	i = 0;
-	check_connect = 0;
-	while (i <= 7 && check_connect >= 0)
+	while (i < 8 && !flag)
 	{
 		if (c & (1 << i))
-			check_connect = kill(pid, SIGUSR1);
+		{
+			if (kill(pid, SIGUSR1) == -1)
+			{
+				flag = 1;
+				return (0);
+			}
+		}
 		else
-			check_connect = kill(pid, SIGUSR2);
+		{
+			if (kill(pid, SIGUSR2) == -1)
+			{
+				flag = 1;
+				return (0);
+			}
+		}
 		i++;
-		usleep(30000);
+		usleep(1500);
 	}
-	if (check_connect == -1)
-		return (1);
+	if (i != 8)
+		printf("can't send msg\n");
+	return (1);
+}
+
+static int	check_pid(int pid)
+{
+	if (pid <= 0)
+	{
+		write(2, "Wrong PID-number!\n", 18);
+		exit(EXIT_FAILURE);
+	}
 	return (0);
 }
 
-int main(int argc, char **argv)
+void	get_signal(int signum)
 {
-	int pid;
-	char *str;
-	int send;
-	int i;
+	int	i;
 
-	send = 0;
+	i = signum;
+}
+
+int	main(int argc, char **argv)
+{
+	int	pid;
+	int	i;
+
 	i = 0;
-
-	pid = -1;
 	if (argc != 3)
 	{
-		ft_putstr_fd("Error: wrong argumens!\n", 2);
-		return (-1);
+		write(2, "Wrong number of arguments!\n", 27);
+		exit(EXIT_FAILURE);
 	}
+	check_argv(argv[1]);
 	pid = ft_atoi(argv[1]);
-	str = argv[2];
-
-	signal(SIGUSR1, process_signal);
-	while(send == 0)
+	check_pid(pid);
+	signal(SIGUSR1, get_signal);
+	while (argv[2][i])
 	{
-		send = send_msg(pid, str[i]);
+		if (!send_signal(argv[2][i], pid))
+		{
+			write(2, "Wrong PID-number!\n", 18);
+			exit(EXIT_FAILURE);
+		}
 		i++;
 	}
+	if (!send_signal('\0', pid))
+	{
+		write(2, "Wrong PID-number!\n", 18);
+		exit(EXIT_FAILURE);
+	}
+	if (signal(SIGUSR1, get_signal))
+		write(1, "message delivered!\n", 19);
+	return (0);
 }
