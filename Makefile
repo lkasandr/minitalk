@@ -2,7 +2,7 @@ NAME_CLIENT =		client
 SRCS_CLIENT =		./client.c ./client_utils.c
 
 NAME_SERVER =		server
-SRCS_SERVER =		./server.c
+SRCS_SERVER =		./server.c ./server_utils.c
 
 HEADER =	./minitalk.h
 

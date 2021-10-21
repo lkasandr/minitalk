@@ -1,6 +1,16 @@
-#include "minitalk.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   client.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lkasandr <lkasandr@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/10/12 18:25:15 by lkasandr          #+#    #+#             */
+/*   Updated: 2021/10/21 18:47:35 by lkasandr         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-#include <stdio.h>
+#include "minitalk.h"
 
 static int	check_argv(char *str)
 {
@@ -12,56 +22,46 @@ static int	check_argv(char *str)
 		if (ft_isdigit(str[i]))
 			i++;
 		else
-		{
-			write(2, "Wrong PID-number!\n", 18);
-			exit(EXIT_FAILURE);
-		}
+			ft_error("Wrong PID-number!\n", 1);
 	}
 	return (1);
 }
 
+int	get_flag(int pid, int signum)
+{
+	int	flag;
+
+	flag = 0;
+	if (kill(pid, signum) == -1)
+		flag = 1;
+	return (flag);
+}
+
 int	send_signal(char c, int pid)
 {
-	int i;
-	int flag;
+	int	i;
+	int	flag;
 
 	i = 0;
 	flag = 0;
-
 	while (i < 8 && !flag)
 	{
 		if (c & (1 << i))
 		{
-			if (kill(pid, SIGUSR1) == -1)
-			{
-				flag = 1;
+			if (get_flag(pid, SIGUSR1) == 1)
 				return (0);
-			}
 		}
 		else
 		{
-			if (kill(pid, SIGUSR2) == -1)
-			{
-				flag = 1;
+			if (get_flag(pid, SIGUSR2) == 1)
 				return (0);
-			}
 		}
 		i++;
 		usleep(1500);
 	}
 	if (i != 8)
-		printf("can't send msg\n");
+		ft_error("can't send msg\n", 0);
 	return (1);
-}
-
-static int	check_pid(int pid)
-{
-	if (pid <= 0)
-	{
-		write(2, "Wrong PID-number!\n", 18);
-		exit(EXIT_FAILURE);
-	}
-	return (0);
 }
 
 void	get_signal(int signum)
@@ -78,29 +78,20 @@ int	main(int argc, char **argv)
 
 	i = 0;
 	if (argc != 3)
-	{
-		write(2, "Wrong number of arguments!\n", 27);
-		exit(EXIT_FAILURE);
-	}
+		ft_error("Wrong number of arguments!\n", 1);
 	check_argv(argv[1]);
 	pid = ft_atoi(argv[1]);
-	check_pid(pid);
+	if (pid <= 0)
+		ft_error("Wrong PID-number!\n", 1);
 	signal(SIGUSR1, get_signal);
 	while (argv[2][i])
 	{
 		if (!send_signal(argv[2][i], pid))
-		{
-			write(2, "Wrong PID-number!\n", 18);
-			exit(EXIT_FAILURE);
-		}
+			ft_error("Wrong PID-number!\n", 1);
 		i++;
 	}
 	if (!send_signal('\0', pid))
-	{
-		write(2, "Wrong PID-number!\n", 18);
-		exit(EXIT_FAILURE);
-	}
-	if (signal(SIGUSR1, get_signal))
-		write(1, "message delivered!\n", 19);
+		ft_error("Wrong PID-number!\n", 1);
+	write(1, "message delivered!\n", 19);
 	return (0);
 }

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   client_utils.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lkasandr <lkasandr@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/10/12 18:35:49 by lkasandr          #+#    #+#             */
+/*   Updated: 2021/10/18 18:18:12 by lkasandr         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minitalk.h"
 
 static int	check_j(int j)
@@ -40,4 +52,23 @@ int	ft_atoi(const char *str)
 		i++;
 	}
 	return (j * f);
+}
+
+int	ft_strlen(char *str)
+{
+	int	i;
+
+	i = 0;
+	if (!str)
+		return (0);
+	while (str[i])
+		i++;
+	return (i);
+}
+
+void	ft_error(char *str, int i)
+{
+	write(2, str, ft_strlen(str));
+	if (i == 1)
+		exit(EXIT_FAILURE);
 }
